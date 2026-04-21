@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pun Me (Simple)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./css/punStyles.css">
+</head>
+<body>
+  
+
+
+  <div class="card">
+    <h2>Pun Times</h2>
+
+    <img class="centertheImage" src="assets/img/goofyah.jpg" alt="Goofy image" width="200" />
+    <input id="topic" placeholder="Enter a random topic like cats or something" />
+    <button onclick="generatePun()">Generate Pun</button>
+
+    <div class="pun" id="output"></div>
+
+    <div class="hint">
+      <a href="index.html"> Go to the Home Page </a>
+    </div>
+  </div>
+
+  <script>
+    /*************************************************
+     *  ADD YOUR AI API KEY HERE
+     *************************************************/
+    const API_KEY = "AIzaSyCDGtlBVt8EBcgbOCQe1MN1gy4sv26y8y4"; // ← paste your key here
+    const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" + API_KEY; // ← your AI endpoint (optional)
+
+    async function generatePun() {
+      const topic = document.getElementById("topic").value;
+      const output = document.getElementById("output");
+
+      if (!topic) {
+        output.textContent = "Please enter a topic!";
+        return;
+      }
+
+      // If no API key is added, use a fallback pun
+      if (!API_KEY || !API_URL) {
+        output.textContent = fallbackPun(topic);
+        return;
+      }
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: `Create a pun about ${topic}.`
+                  }
+                ]
+              }
+            ]
+          })
+        });
+
+        const data = await response.json();
+        console.log(data); 
+        const pun = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        output.textContent = pun || "No pun generated 🤷";
+      } catch (err) {
+        output.textContent = "Error generating pun 😢";
+        console.error(err);
+      }
+    }
+
+    function fallbackPun(topic) {
+      return `I tried to make a pun about ${topic}, but it was a bit pun‑derwhelming.`;
+    }
+  </script>
+
+</body>
+</html>

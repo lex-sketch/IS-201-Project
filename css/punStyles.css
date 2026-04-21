@@ -1,0 +1,45 @@
+
+    body {
+      font-family: "Comic Sans MS", system-ui;
+      background: #0011ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .centertheImage {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+
+    }
+
+    .card {
+      background: white;
+      font-family: "Comic Sans MS", system-ui;
+      padding: 1.5rem;
+      border-radius: 10px;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    input, button {
+      width: 100%;
+      font-family: "Comic Sans MS", system-ui;
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .pun {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
+    .hint {
+      font-size: 0.8rem;
+      color: #777;
+      margin-top: 0.5rem;
+    }

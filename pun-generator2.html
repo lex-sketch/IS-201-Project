@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pun.me — AI Pun Generator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f5f4f0;
+      color: #1a1a18;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .pun-wrap {
+      max-width: 640px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .pun-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .pun-logo {
+      font-size: 32px;
+      font-weight: 500;
+      color: #1a1a18;
+      letter-spacing: -0.5px;
+    }
+
+    .pun-logo span { color: #D85A30; }
+
+    .pun-tagline {
+      font-size: 14px;
+      color: #888780;
+      margin-top: 4px;
+    }
+
+    .pun-card {
+      background: #ffffff;
+      border: 0.5px solid rgba(0,0,0,0.12);
+      border-radius: 12px;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      min-height: 160px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+
+    .pun-number {
+      font-size: 12px;
+      color: #b4b2a9;
+      position: absolute;
+      top: 16px;
+      left: 20px;
+    }
+
+    .pun-text {
+      font-size: 20px;
+      line-height: 1.5;
+      color: #1a1a18;
+      font-weight: 400;
+    }
+
+    .pun-text.loading {
+      color: #b4b2a9;
+      font-size: 15px;
+      font-style: italic;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+
+    .topic-input {
+      flex: 1;
+      min-width: 180px;
+      padding: 0 14px;
+      height: 40px;
+      border-radius: 8px;
+      border: 0.5px solid rgba(0,0,0,0.25);
+      background: #ffffff;
+      color: #1a1a18;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .topic-input::placeholder { color: #b4b2a9; }
+
+    .topic-input:focus {
+      outline: none;
+      border-color: #D85A30;
+    }
+
+    .btn-gen {
+      background: #D85A30;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0 20px;
+      height: 40px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      transition: opacity 0.15s;
+    }
+
+    .btn-gen:hover { opacity: 0.88; }
+    .btn-gen:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .categories {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+
+    .cats-label {
+      font-size: 12px;
+      color: #b4b2a9;
+      margin-right: 2px;
+    }
+
+    .cat-btn {
+      background: #f1efe8;
+      border: 0.5px solid rgba(0,0,0,0.1);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      color: #5f5e5a;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.12s;
+    }
+
+    .cat-btn:hover, .cat-btn.active {
+      background: #FAECE7;
+      border-color: #F0997B;
+      color: #993C1D;
+    }
+
+    .pun-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn-copy {
+      background: transparent;
+      border: 0.5px solid rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 0 14px;
+      height: 36px;
+      font-size: 13px;
+      color: #5f5e5a;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.12s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-copy:hover { background: #f1efe8; }
+
+    .copy-feedback {
+      font-size: 12px;
+      color: #3B6D11;
+      display: none;
+    }
+
+    .rating { display: flex; gap: 4px; }
+
+    .star {
+      cursor: pointer;
+      font-size: 18px;
+      color: rgba(0,0,0,0.15);
+      transition: color 0.1s;
+      user-select: none;
+    }
+
+    .star.lit { color: #EF9F27; }
+
+    @media (max-width: 480px) {
+      .pun-text { font-size: 17px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="pun-wrap">
+  <div class="pun-header">
+    <div class="pun-logo">pun<span>.me</span></div>
+    <div class="pun-tagline">AI-powered puns on any topic</div>
+  </div>
+
+  <div class="pun-card">
+    <div class="pun-number" id="pun-num"></div>
+    <div class="pun-text loading" id="pun-text">Click "Generate Pun" to get started...</div>
+  </div>
+
+  <div class="controls">
+    <input class="topic-input" type="text" id="topic-input" placeholder="Enter a topic (e.g. cats, coffee, space...)" />
+    <button class="btn-gen" id="gen-btn" onclick="generatePun()">Generate Pun</button>
+  </div>
+
+  <div class="categories" id="cats">
+    <span class="cats-label">Quick:</span>
+  </div>
+
+  <div class="pun-footer">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <button class="btn-copy" id="copy-btn" onclick="copyPun()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+          <rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+        Copy
+      </button>
+      <span class="copy-feedback" id="copy-ok">Copied!</span>
+    </div>
+    <div class="rating" id="stars"></div>
+  </div>
+</div>
+
+<script>
+  const GEMINI_API_KEY = "AIzaSyBqFjdH1-tFSlS_YHoXnEWmDALtYSxnuAk";
+  const GEMINI_MODEL = "gemini-2.0-flash";
+
+  const categories = ["animals", "food", "science", "music", "sports", "weather", "tech", "dad joke"];
+  const catsEl = document.getElementById("cats");
+  const starsEl = document.getElementById("stars");
+  let punCount = 0;
+  let currentPun = "";
+
+  categories.forEach(c => {
+    const b = document.createElement("button");
+    b.className = "cat-btn";
+    b.textContent = c;
+    b.onclick = () => {
+      document.querySelectorAll(".cat-btn").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      document.getElementById("topic-input").value = c;
+      generatePun();
+    };
+    catsEl.appendChild(b);
+  });
+
+  for (let i = 1; i <= 5; i++) {
+    const s = document.createElement("span");
+    s.className = "star";
+    s.textContent = "★";
+    s.dataset.val = i;
+    s.onmouseover = () => highlightStars(i);
+    s.onmouseout = () => highlightStars(0);
+    s.onclick = () => highlightStars(i, true);
+    starsEl.appendChild(s);
+  }
+
+  function highlightStars(n, lock) {
+    document.querySelectorAll(".star").forEach(s => {
+      s.classList.toggle("lit", parseInt(s.dataset.val) <= n);
+    });
+  }
+
+  async function generatePun() {
+    const topic = document.getElementById("topic-input").value.trim();
+    const btn = document.getElementById("gen-btn");
+    const textEl = document.getElementById("pun-text");
+    const numEl = document.getElementById("pun-num");
+
+    btn.disabled = true;
+    textEl.className = "pun-text loading";
+    textEl.textContent = "Thinking of something punny...";
+    highlightStars(0);
+
+    const systemPrompt = "You are a pun generator. Respond with ONLY a single short pun — no intro, no explanation, no punctuation like 'Here\\'s a pun:'. Just the pun itself. Make it clever and groan-worthy.";
+    const userMsg = topic
+      ? `Give me a funny pun about: ${topic}`
+      : "Give me a random funny pun about any everyday topic.";
+
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: systemPrompt }] },
+            contents: [{ role: "user", parts: [{ text: userMsg }] }]
+          })
+        }
+      );
+
+      const data = await res.json();
+      const pun = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+      if (pun) {
+        punCount++;
+        currentPun = pun;
+        textEl.className = "pun-text";
+        textEl.textContent = pun;
+        numEl.textContent = "Pun #" + punCount;
+      } else {
+        textEl.textContent = "Couldn't think of a pun... try a different topic!";
+      }
+    } catch (e) {
+      textEl.textContent = "Something went wrong — the puns are on holiday.";
+      console.error(e);
+    }
+
+    btn.disabled = false;
+  }
+
+  function copyPun() {
+    if (!currentPun) return;
+    navigator.clipboard.writeText(currentPun).then(() => {
+      const fb = document.getElementById("copy-ok");
+      fb.style.display = "inline";
+      setTimeout(() => fb.style.display = "none", 1800);
+    });
+  }
+
+  document.getElementById("topic-input").addEventListener("keydown", e => {
+    if (e.key === "Enter") generatePun();
+  });
+</script>
+
+</body>
+</html>
