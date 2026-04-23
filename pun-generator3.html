@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pun Me (Simple)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./css/punStyles.css">
+</head>
+<body>
+  
+
+
+  <div class="card">
+    <h2>Pun Times</h2>
+
+    <img class="centertheImage" src="assets/img/goofyah.jpg" alt="Goofy image" width="200" />
+    <div class="pun" id="output"></div>
+    <button onclick="generatePun()">Generate Pun</button>
+
+
+    <div class="hint">
+      <a href="index.html"> Go to the Home Page </a>
+    </div>
+  </div>
+
+  <script>
+    async function generatePun() {
+      const output = document.getElementById("output");
+
+      try {
+        const response = await fetch("funny.txt");
+        const text = await response.text();
+
+        //split puns
+        const puns = text.split("\n").filter(line => line.trim() !== "");
+
+        if (puns.length === 0) {
+          output.textContent = "No puns found in the file 😢";
+          return;
+        }
+
+        // Select a random pun from the list
+        const randomPun = puns[Math.floor(Math.random() * puns.length)];
+        output.textContent = randomPun;
+      } catch (err) {
+        output.textContent = "Error generating pun 😢";
+        console.error(err);
+      }
+  }
+  </script>
+
+</body>
+</html>
